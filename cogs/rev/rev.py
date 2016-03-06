@@ -7,12 +7,6 @@ import json
 from .utils.dataIO import fileIO
 import os
 
-print("Thank you for using my module!") #Prints a message when the cog is loaded
-print("I'm sure you'll get a lot of fun out of it.")
-print("Don't forget to change the roles in 'data/rev/config.json'!")
-print("                -ReversedOblivion")
-print()
-
 class rev:
 
     """ReversedOblivion's Custom Commands\nSome commands are finicky!"""
