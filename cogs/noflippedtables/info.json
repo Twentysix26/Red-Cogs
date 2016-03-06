@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "irdumb",
+    "DESCRIPTION" : "Usage: [p]help tableset",
+    "DISABLED" : false,
+    "NAME" : "Unflips all flipped tables"
+}

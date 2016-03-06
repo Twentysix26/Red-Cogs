@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "Airen and JennJenn",
+    "DESCRIPTION" : "Usage: [p]insult <user>\n[p]insult",
+    "DISABLED" : false,
+    "NAME" : "Insults generator"
+}
