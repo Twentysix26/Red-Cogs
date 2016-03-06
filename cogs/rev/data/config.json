@@ -1,0 +1,9 @@
+{
+    "approvedroles" : [
+        "Admin",
+        "Mod"
+    ],
+    "deniedroles" : [
+        "Muted"
+    ]
+}
