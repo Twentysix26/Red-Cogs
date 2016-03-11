@@ -31,10 +31,13 @@ def check_folders():
 		os.makedirs("data/weather")
 
 def check_files():
+	settings = {"api_key": "Get your API key from: www.wunderground.com/weather/api/"}
+	
 	f = "data/weather/settings.json"
 	if not fileIO(f, "check"):
-		print("Creating empty settings.json")
-		fileIO(f, "save", {})
+		print("Creating settings.json")
+		print("You must obtain an API key as noted in the newly created 'settings.json' file")
+		fileIO(f, "save", settings)
 
 def setup(bot):
 	check_folders()
