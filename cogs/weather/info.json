@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "rfilkins1992 & Will",
+    "DESCRIPTION" : "Returns the temperature in a given location.",
+    "DISABLED" : false,
+    "NAME" : "Weather"
+}
