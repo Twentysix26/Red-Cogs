@@ -1,6 +1,6 @@
 {
     "AUTHOR" : "rfilkins1992 & Will",
-    "DESCRIPTION" : "Returns the temperature in a given location.\\nUse the 'settings.json.example' file to get your own API key.",
+    "DESCRIPTION" : "Returns the temperature in a given location.",
     "DISABLED" : false,
     "NAME" : "Weather"
 }
