@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "Canule/goldsmith - https://github.com/Canule/Red-DiscordBot",
+    "DESCRIPTION" : "Search for wikipedia articles",
+    "DISABLED" : false,
+    "NAME" : "Wikipedia Search"
+}
