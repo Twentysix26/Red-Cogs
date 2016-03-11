@@ -50,7 +50,7 @@ def setup(bot):
     try:
         import wikipedia
     except:
-        raise ModuleNotFound("Wikipedia is not installed. Do 'pip install wikipedia --upgrade' to use this cog.")
+        raise ModuleNotFound("Wikipedia is not installed. Do 'pip3 install wikipedia --upgrade' to use this cog.")
     bot.add_cog(Wikipedia(bot))
 
 
