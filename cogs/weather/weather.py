@@ -7,7 +7,7 @@ import os
 from .utils.dataIO import fileIO
 
 
-class WeatherSearch:
+class weather:
 	"""Search for weather in given location."""
 
 	def __init__(self, bot):
@@ -16,6 +16,8 @@ class WeatherSearch:
 
 	@commands.command(no_pm=True, pass_context=False)
 	async def temp(self, location):
+		"""Make sure to get your own API key and put it into data/weather/settings.json
+		\nYou can get an API key from: www.wunderground.com/weather/api/"""
 		url = "http://api.wunderground.com/api/" + self.settings['api_key'] + "/conditions/q/" + location + ".json"
 		async with aiohttp.get(url) as r:
 		    data = await r.json()
@@ -42,5 +44,5 @@ def check_files():
 def setup(bot):
 	check_folders()
 	check_files()
-	n = WeatherSearch(bot)
+	n = weather(bot)
 	bot.add_cog(n)
