@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "rfilkins1992 & Will",
+    "DESCRIPTION" : "Returns the temperature in a given location.\nRequires API key obtainable from www.wunderground.com/weather/api/",
+    "DISABLED" : false,
+    "NAME" : "Weather"
+}
