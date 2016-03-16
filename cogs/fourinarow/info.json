@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "Canule - https://github.com/Canule/Red-DiscordBot",
+    "DESCRIPTION" : "A four in a row game up to 4 players.\nRequires emoji module\nDo 'pip3 install emoji --upgrade' to use this cog.",
+    "DISABLED" : false,
+    "NAME" : "Four in a row"
+}
