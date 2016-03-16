@@ -116,6 +116,8 @@ class FourInARow:
         elif self.ingame_check(ctx, user.id):
             await self.start_game(ctx, user.id)
             await self.delete_message(ctx)
+            self.stats["gamesStarted"] += 1
+            fileIO(STATS, "save", self.stats)            
             await self.draw_board(ctx, "\n` Game started\nUse '{}mytoken [number 1/{}]`".format(self.PREFIXES[0], BOARDWIDTH[BOARDSIZE]))       
         
     @_4row.command(pass_context=True, no_pm=True)
@@ -146,6 +148,8 @@ class FourInARow:
                     # Check if game is expired of stop voted
                     if differenceStarted >= gameExpires:
                         await self.stop_game(ctx)
+                        self.stats["gamesTimedOut"] += 1
+                        fileIO(STATS, "save", self.stats)                        
                         await self.bot.say("{} ` Game stopped`".format(user.mention))
                     else:# Not expired yet so check unlock votes
                         # Game is unlocked?
@@ -173,6 +177,8 @@ class FourInARow:
                         if CH_VOTES_STP["votes"] >= minVotesToUnlock:
                             await self.stop_game(ctx)
                             #await self.delete_message(ctx)
+                            self.stats["gamesUnlocked"] += 1
+                            fileIO(STATS, "save", self.stats)                            
                             await self.bot.say("` Game stopped\nWell done {}, you ruined the game...`".format(user))
                 else: # user.id in CH_VOTES_STP["voteIds"]:
                     await self.bot.say( "{} ` You already voted.`".format(user.mention))                      
@@ -221,6 +227,8 @@ class FourInARow:
             elif leaveData["showMsg"] and leaveData["drawBoard"]:
                 await self.draw_board(ctx, leaveData["msg"])
             if leaveData["stopGame"]:
+                self.stats["gamesRuined"] += 1
+                fileIO(STATS, "save", self.stats)            
                 await self.stop_game(ctx)
         else:
             await self.bot.say("{} ` No game to leave from...`".format(user.mention))
@@ -244,8 +252,7 @@ class FourInARow:
             total = won+lost
             cTotal = total
             # Make cTotal = 1 for calc. if player is new/no games.
-            if total == 0:
-                cTotal = 1
+            if total == 0: cTotal = 1
             ratio = float(won)/(cTotal)
             resultRankings = await self.get_rankings(ctx, user.id)# Returns{"topScore": array, "userIdRank": string(userId)}
             userIdRank = resultRankings["userIdRank"]
@@ -922,6 +929,8 @@ class FourInARow:
         # Remove channel from games
         try:
             del self.game["CHANNELS"][ctx.message.channel.id]
+            self.stats["gamesStopped"] += 1
+            fileIO(STATS, "save", self.stats)            
         except Exception as e:
             logger.info(e)
             logger.info("Error deleting {} from games. It seems that this game is already deleted elsewhere, check code and JSON)".format(ctx.message.channel.id))
@@ -1590,8 +1599,10 @@ def check_files():
         fileIO(f, "save", players)
 
     stats = {
-            "gamesStarted": 0,
-            "gamesTimedOut": 0,
+            "gamesStarted": 0, 
+            "gamesStopped": 0, 
+            "gamesRuined": 0, 
+            "gamesTimedOut": 0, 
             "gamesUnlocked": 0}
 
     f = STATS
