@@ -14,10 +14,7 @@ class Penis:
 
         This is 100% accurate."""
         random.seed(user.id)
-        p = "8"
-        for i in range(random.randint(0, 30)):
-            p += "="
-        p += "D"
+        p = "8" + "="*random.randint(0, 30) + "D"
         await self.bot.say("Size: " + p)
 
 def setup(bot):

@@ -25,7 +25,7 @@ class weather:
 			temperature = data["current_observation"].get("temperature_string", "No temperature found.")
 			await self.bot.say("Current temperature in your location is: " + temperature +".")
 		else:
-			await self.bot.say("Please use your zip code or the format City,State(City,Country if outside of the US). \n****NOTE:**** Include the ',' after the state and do NOT put a space after the ','")
+			await self.bot.say("Please use your zip code or the format City,State(City,Country if outside of the US). EX: London,UK \n****NOTE:**** Include the ',' after the city and do NOT put a space after the ','")
 
 def check_folders():
 	if not os.path.exists("data/weather"):
