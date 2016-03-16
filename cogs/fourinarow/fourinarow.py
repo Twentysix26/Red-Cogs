@@ -245,7 +245,8 @@ class FourInARow:
             # Make total = 1 for calc. (if player is new/no games.)
             if total == 0:
                 total = 1   
-            ratio = float(won)/(total)    
+            ratio = float(won)/(total)
+            total -= 1
             resultRankings = await self.get_rankings(ctx, user.id)# Returns{"topScore": array, "userIdRank": string(userId)}
             userIdRank = resultRankings["userIdRank"]
             msg = "{}```\n".format(user.mention)
