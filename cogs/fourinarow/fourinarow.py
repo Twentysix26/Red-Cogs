@@ -54,7 +54,8 @@ class FourInARow:
     async def _4row(self, ctx):
         """Four in a row game operations."""
         if ctx.invoked_subcommand is None:
-            await self.bot.say("` Type: '{}help 4row' for more info about the Four in a row commands.`".format(self.PREFIXES[0]))
+            await send_cmd_help(ctx)
+            return
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Game Operations
