@@ -37,7 +37,7 @@ BACKUP = DIR_DATA+ "/players.backup"
 class FourInARow:
     """Four in a row
     Dominate the board!"""
-    
+
     def __init__(self, bot):
         self.bot = bot
         self.game = fileIO(GAMES, "load")
@@ -52,17 +52,17 @@ class FourInARow:
 
     @commands.group(name="4row", pass_context=True)
     async def _4row(self, ctx):
-        """Four in a row game operations"""
+        """Four in a row game operations."""
         if ctx.invoked_subcommand is None:
-            await self.bot.say("Type help game for info.")
+            await self.bot.say("` Type: '{}help 4row' for more info about the Four in a row commands.`".format(self.PREFIXES[0]))
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Game Operations
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-     
+
     @_4row.command(pass_context=True, no_pm=True)
     async def register(self, ctx):
-        """Registers an 'Four in a row' account"""
+        """Registers an 'Four in a row' account."""
         user = ctx.message.author
         if self.account_check(user.id) is False:
             registerData = await self.register_player(ctx, user)# returns {"showMsg": bool, "msg": str} 
@@ -70,15 +70,15 @@ class FourInARow:
                 await self.bot.say(registerData["msg"])      
         else:
             await self.bot.say("{}` You are already registered!` ".format(user.mention))
-            
+
     @_4row.command(pass_context=True, no_pm=True)
     async def new(self, ctx):
-        """Create a new game"""
+        """Create a new game."""
         user = ctx.message.author
         if self.account_check(user.id):
             if ctx.message.channel.id not in self.game["CHANNELS"]:
                 now = round(time.time())
-                # Set-up a game
+                # Set-up a game.
                 self.game["CHANNELS"][ctx.message.channel.id] = {"board": self.empty_board(0), 
                                                                                         "boardSize": 0, 
                                                                                         "activePlayers": 0 ,
@@ -103,30 +103,30 @@ class FourInARow:
             else:
                 await self.bot.say("{}` There is already a new game set!\nTry: '{}4row join'` ".format(user.mention, self.PREFIXES[0]))
         else:       
-            await self.bot.say( "{} ` You need an account in order to use this command {}4row help`".format(user.mention, self.PREFIXES[0]))
-            
+            await self.bot.say( "{} ` You need an account in order to use this command.\nType:'{}4row register' to create one`".format(user.mention, self.PREFIXES[0]))
+
     @_4row.command(pass_context=True, no_pm=True)
     async def start(self, ctx):
-        """Start the game"""
+        """Start the game."""
         user = ctx.message.author
         BOARDWIDTH = self.settings["BOARDWIDTH"]
         BOARDSIZE = self.game["CHANNELS"][ctx.message.channel.id]["boardSize"]
         if not self.ingame_check(ctx, user.id):
-            await self.bot.say( "{} ` You need to be in a game to start`".format(user.mention))
+            await self.bot.say( "{} ` You need to be in a game to start.`".format(user.mention))
         elif self.ingame_check(ctx, user.id):
             await self.start_game(ctx, user.id)
             await self.delete_message(ctx)
             self.stats["gamesStarted"] += 1
             fileIO(STATS, "save", self.stats)            
-            await self.draw_board(ctx, "\n` Game started\nUse '{}mytoken [number 1/{}]`".format(self.PREFIXES[0], BOARDWIDTH[BOARDSIZE]))
-        
+            await self.draw_board(ctx, "\n` Game started\nIf it's your turn use '{}mytoken [number 1/{}]`".format(self.PREFIXES[0], BOARDWIDTH[BOARDSIZE]))
+
     @_4row.command(pass_context=True, no_pm=True)
     async def stop(self, ctx):
-        """Stops the game by voting or after a game has been expired"""
+        """Stops the game by voting or after a game has been expired."""
         user= ctx.message.author
         Allowed = False
         if self.account_check(user.id):
-            # Check for a game @ channel
+            # Check for a game @ channel.
             try:
                 now = round(time.time())
                 CH_GAME = self.game["CHANNELS"][ctx.message.channel.id]
@@ -145,20 +145,20 @@ class FourInARow:
             if data:
                 # User has voted already?
                 if user.id not in CH_VOTES_STP["voteIds"] or differenceStarted >= gameExpires:
-                    # Check if game is expired of stop voted
+                    # Check if game is expired of stop voted.
                     if differenceStarted >= gameExpires:
                         await self.stop_game(ctx)
                         self.stats["gamesTimedOut"] += 1
                         fileIO(STATS, "save", self.stats)                        
                         await self.bot.say("{} ` Game stopped`".format(user.mention))
-                    else:# Not expired yet so check unlock votes
+                    else:# Not expired yet so check unlock votes.
                         # Game is unlocked?
                         if differenceLastActivity >= gameVoteUnlocks:
                             CH_VOTES_STP["votes"] += 1
                             CH_VOTES_STP["voteIds"].append(user.id)
                             await self.delete_message(ctx)
                             await self.draw_board(ctx, "\n` Votes to stop this game: {}/{}`".format(CH_VOTES_STP["votes"], minVotesToUnlock))
-                            # Save vote
+                            # Save vote.
                             self.game["CHANNELS"][ctx.message.channel.id]["VOTES_STP"] = CH_VOTES_STP
                             fileIO(GAMES, "save", self.game)
                         # Game is locked for vote?
@@ -167,13 +167,13 @@ class FourInARow:
                             #await self.delete_message(ctx)
                             await self.bot.say("{} ` Game is locked by a last activity cool-down, please wait {}sec. to stop(vote) this game down.`"
                                                         .format(user.mention, timeLeft))
-                        # Game has no lock conditions so output not expired message
+                        # Game has no lock conditions so output not expired message.
                         elif differenceStarted < gameExpires:
                             timeLeft = gameExpires-differenceStarted
                             #await self.delete_message(ctx)
                             await self.bot.say("{} ` Game is not expired yet, please wait {}sec. to stop this game, or start a game in another channel`"
                                                         .format(user.mention, timeLeft))
-                        # Check votes to stop game before expire
+                        # Check votes to stop game before expire.
                         if CH_VOTES_STP["votes"] >= minVotesToUnlock:
                             await self.stop_game(ctx)
                             #await self.delete_message(ctx)
@@ -185,11 +185,11 @@ class FourInARow:
             else:
                 await self.bot.say( "{} ` No game to stop.`".format(user.mention))
         else:
-            await self.bot.say( "{} ` You need an account in order to use this command`".format(user.mention))
+            await self.bot.say( "{} ` You need an account in order to use this command.\nType:'{}4row register' to create one`".format(user.mention, self.PREFIXES[0]))
 
     @_4row.command(pass_context=True, no_pm=True)
     async def join(self, ctx):
-        """Join a new game"""
+        """Join a new game."""
         user = ctx.message.author
         try:
             inQue = self.game["CHANNELS"][ctx.message.channel.id]["inQue"]
@@ -207,10 +207,10 @@ class FourInARow:
                 await self.draw_board(ctx, joinData["msg"])
         else:
             await self.bot.say("{} ` Nothing to join...`".format(user.mention))
-            
+
     @_4row.command(pass_context=True, no_pm=True)
     async def leave(self, ctx):
-        """Leave a game"""
+        """Leave a game."""
         user = ctx.message.author
         try:
             inQue = self.game["CHANNELS"][ctx.message.channel.id]["inQue"]
@@ -240,7 +240,7 @@ class FourInARow:
 
     @_4row.command(pass_context=True, no_pm=True)
     async def board(self, ctx):
-        """Displays the play field"""
+        """Displays the play field."""
         user = ctx.message.author
         await self.delete_message(ctx)
         await self.draw_board(ctx, "")
@@ -285,7 +285,7 @@ class FourInARow:
                                                                                                                                                                                 len(self.players["PLAYERS"]))
             await self.bot.say(msg)
         else:
-            await self.bot.say( "{} ` You need an account in order to use this command`".format(user.mention))
+            await self.bot.say( "{} ` You need an account in order to use this command.\nType:'{}4row register' to create one`".format(user.mention, self.PREFIXES[0]))
 
     @_4row.command(pass_context=True, no_pm=True)
     async def addbot(self, ctx):
@@ -298,15 +298,15 @@ class FourInARow:
         except Exception as e:
             logger.info(e)
             data = False
-        # Check permission
+        # Check permission.
         if self.account_check(user.id):
             if self.settings["BOT_SETTINGS"]["ENABLED"]:
                 if data and inQue == "yes":
-                    # Check is bot exist in players
+                    # Check is bot exist in players.
                     if not self.account_check(bot.id):
                         # Register bot
                         msg = await self.register_player(ctx, bot)# returns {"showMsg": bool, "msg": str}
-                    # Check if account is made
+                    # Check if account is made.
                     if self.account_check(bot.id):
                         joinData = await self.join_game(ctx, bot)# returns {"delMsg": bool, "showMsg": bool, "drawBoard": bool, "msg": str}
                         if joinData["delMsg"]:
@@ -335,15 +335,15 @@ class FourInARow:
         except Exception as e:
             logger.info(e)
             data = False
-        # Check permission
+        # Check permission.
         if self.account_check(user.id):
             if self.settings["BOT_SETTINGS"]["ENABLED"]:
                 if data and inQue == "yes":
-                    # Check is bot exist in players
+                    # Check is bot exist in players.
                     if not self.account_check(bot.id):
                         # Register bot
                         msg = await self.leave_game(ctx, bot)# returns {"msg": str} 
-                    # Check if account is made
+                    # Check if account is made.
                     if self.account_check(bot.id):
                         leaveData = await self.leave_game(ctx, bot)# returns {"delMsg": bool, "showMsg": bool, "drawBoard": bool, "msg": str, "stopGame": bool}
                         if leaveData["delMsg"]:
@@ -361,7 +361,7 @@ class FourInARow:
             else:
                 await self.bot.say( "{} ` The use of a bot player is disabled`".format(user.mention))                  
         else:
-            await self.bot.say( "{} ` You need an account in order to use this command`".format(user.mention))
+            await self.bot.say( "{} ` You need an account in order to use this command.\nType:'{}4row register' to create one`".format(user.mention, self.PREFIXES[0]))
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Direct Commands
@@ -390,7 +390,7 @@ class FourInARow:
                     stopGame = False
                     tokenRow = int(someToken)
                     tokenRow -= 1 # Index = 0/BOARDWIDTH
-                    # Check if token is in range
+                    # Check if token is in range.
                     if tokenRow >= 0 and tokenRow <= BOARDWIDTH[BOARDSIZE]-1:
                         board = self.game["CHANNELS"][ctx.message.channel.id]["board"]
                         freePos = self.lowest_empty_space(ctx, tokenRow)
@@ -405,15 +405,15 @@ class FourInARow:
                                 for usr in range (len(CH_PLAYERS["IDS"])):
                                     if self.board_full(ctx):
                                         comment = ("\n{} ` It's a tie!     `".format(user.mention))
-                                        self.game["CHANNELS"][ctx.message.channel.id]["winner"] = "draw"# Needed for update_score
-                                        await self.update_score(ctx)# Update score of all players
+                                        self.game["CHANNELS"][ctx.message.channel.id]["winner"] = "draw"# Needed for update_score.
+                                        await self.update_score(ctx)# Update score of all players.
                                         stopGame = True
                                     elif self.is_winner(ctx, self.TOKENS[CH_PLAYERS["TOKENS"][usr]][0]):
                                         comment = ("\n{} ` Owns this game with his {}'s`{}".format(user.mention, 
                                                                                                                                 self.TOKENS[CH_PLAYERS["TOKENS"][usr]][0], 
                                                                                                                                 self.TOKENS[CH_PLAYERS["TOKENS"][usr]][1]))
-                                        self.game["CHANNELS"][ctx.message.channel.id]["winner"] = user.id# Needed for update_score
-                                        await self.update_score(ctx)# Update score of all players
+                                        self.game["CHANNELS"][ctx.message.channel.id]["winner"] = user.id# Needed for update_score.
+                                        await self.update_score(ctx)# Update score of all players.
                                         stopGame = True
                                 fileIO(GAMES, "save", self.game)
                             await self.delete_message(ctx)
@@ -423,7 +423,7 @@ class FourInARow:
                                 comment = "\n{} `Congratulations, you owned the game with your {}'s`{}".format(user.mention,
                                                                                                                                                     self.TOKENS[CH_PLAYERS["TOKENS"][usr]][0], 
                                                                                                                                                     self.TOKENS[CH_PLAYERS["TOKENS"][usr]][1])
-                                await self.draw_board(ctx, comment, True)# Dm board to user
+                                await self.draw_board(ctx, comment, True)# Dm board to user.
                                 await self.bot.say("` Game ended`")
                                 await self.stop_game(ctx)
                     else:
@@ -431,7 +431,7 @@ class FourInARow:
                 else:
                     await self.bot.say("{} ` Wait for your turn!`".format(user.mention))
             else:
-                await self.bot.say("{} ` You left the game idiot!`".format(user.mention))
+                await self.bot.say("{} ` You left the game, you idiot!`".format(user.mention))
         else:
             await self.bot.say("{} ` Game not available or started.`".format(user.mention))
         
@@ -455,17 +455,17 @@ class FourInARow:
                 else:
                     await self.bot.say("{}".format(msg))
             else:
-                await self.bot.say("{} `Choose a token number between 0 and {}, check DM for available tokens`".format(user.mention, max))
+                await self.bot.say("{} ` Choose a token number between 0 and {}, check DM for available tokens`".format(user.mention, max))
                 msg = await self.msg_available_tokens()
                 await self.bot.send_message(ctx.message.author, msg)
         else:
-            await self.bot.say("{} `You don't have an account for Four in a row. Type {}register to open one.`".format(user.mention, self.PREFIXES[0]))
+            await self.bot.say( "{} ` You need an account in order to use this command.\nType:'{}4row register' to create one`".format(user.mention, self.PREFIXES[0]))
 
     @commands.command(pass_context=True, no_pm=True)
     async def listtokens(self, ctx):
         """Shows the avaiable Tokens."""
         user= ctx.message.author
-        await self.bot.say("{} `Check DM for available tokens`".format(user.mention, max))
+        await self.bot.say("{} ` Check DM for available tokens.`".format(user.mention, max))
         msg = await self.msg_available_tokens()
         await self.bot.send_message(ctx.message.author, msg)
 
@@ -558,7 +558,7 @@ class FourInARow:
             fileIO(SETTINGS, "save", self.settings)
         else:
             await self.bot.say("{} ` Game is limited to 4 players max. `".format(user.mention))
-   
+
     @_4row.command(name="expiretime", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def _expiretime(self, ctx, expireTime : int):
@@ -705,7 +705,7 @@ class FourInARow:
     # Various Functions
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-     # Check if there is an account made
+     # Check if there is an account made.
     def account_check(self, id):
         try:
             REG_PLAYERS = self.players["PLAYERS"]
@@ -720,7 +720,7 @@ class FourInARow:
         else:
             return False
 
-    # Check if user.id is currently in channel.id game
+    # Check if user.id is currently in channel.id game.
     def ingame_check(self, ctx, userId):
         try:
             activePlayers = self.game["CHANNELS"][ctx.message.channel.id]["activePlayers"]
@@ -769,7 +769,7 @@ class FourInARow:
             msg = ("{} `Account created`".format(user.mention))
             return {"showMsg": True, "msg": msg}
 
-    # Join Game
+    # Join Game.
     async def join_game(self, ctx, user):
         msg = ""
         CH_PLAYERS = self.game["CHANNELS"][ctx.message.channel.id]["PLAYERS"]
@@ -850,8 +850,8 @@ class FourInARow:
             removeBot = False
         deleted = False
         for usr in range(0, activePlayers):
-            if user.id == self.game["CHANNELS"][ctx.message.channel.id]["PLAYERS"]["IDS"][usr]:# Get user position
-                # turnIds and activePlayers are crucial for an started game
+            if user.id == self.game["CHANNELS"][ctx.message.channel.id]["PLAYERS"]["IDS"][usr]:# Get user position.
+                # turnIds and activePlayers are crucial for an started game.
                 if self.game["CHANNELS"][ctx.message.channel.id]["inQue"] == "yes":
                     self.players["PLAYERS"][user.id]["boardId"] = "noGame"
                     self.players["PLAYERS"][user.id]["MSG"]["playerMsg"] = "has left"
@@ -868,7 +868,7 @@ class FourInARow:
                             del self.game["CHANNELS"][ctx.message.channel.id]["turnIds"][usr2]
                             activePlayers -= 1
                             self.game["CHANNELS"][ctx.message.channel.id]["activePlayers"] = activePlayers
-                            # Adjust "empty" board size
+                            # Adjust "empty" board size.
                             if activePlayers <= 2:
                                 self.game["CHANNELS"][ctx.message.channel.id]["boardSize"] = 0
                             elif activePlayers == 3:
@@ -882,7 +882,7 @@ class FourInARow:
                 elif self.game["CHANNELS"][ctx.message.channel.id]["inQue"] == "no":
                     # Set next turn before we skip id.
                     self.next_turn(ctx, user)# May need a check for turn, for now it seems to work ok.
-                    # Remove board id from user
+                    # Remove board id from user.
                     self.players["PLAYERS"][user.id]["boardId"] = "noGame"
                     self.players["PLAYERS"][user.id]["MSG"]["playerMsg"] = "has left"
                     # Ad user id to skipIds.
@@ -1000,7 +1000,7 @@ class FourInARow:
             # Preferred has no special conditions.
             self.players["PLAYERS"][user.id]["tokenPreferred"] = newToken
             if data and inQue == "yes":
-                # Filter usable values from TOKENS
+                # Filter usable values from TOKENS.
                 for (key, t) in enumerate(self.TOKENS):
                     availableTokens.append(key)
                 unusedTokens = self.get_unused(availableTokens, usedTokens)
@@ -1020,7 +1020,7 @@ class FourInARow:
                     #msg = ( "{} \n`Your preferred and assigned token is: {}\n `{}"
                     #           .format(user.mention, self.TOKENS[newToken][0], self.TOKENS[newToken][1]))
                 else:
-                    # Set random token in game
+                    # Set random token in game.
                     newToken = random.choice(unusedTokens)
                     CH_PLAYERS["TOKENS"][userPos] = newToken
                     
@@ -1128,7 +1128,7 @@ class FourInARow:
         skipIds = CH_GAME["skipIds"]
         turnIds = CH_GAME["turnIds"]
         activePlayers = CH_GAME["activePlayers"]
-        nextTurn = 'ERRnt' # Trace
+        nextTurn = 'ERRnt' # Trace.
         userPos = -1
         if activePlayers >= 1:
             for usr in range(activePlayers):
@@ -1136,10 +1136,10 @@ class FourInARow:
                     userPos = usr
                     break
         if turnIds[0] == CH_PLAYERS["IDS"][userPos]:
-            nextTurn = self.shift(turnIds, -1)# Shift id
-            # Check if player has left the game
+            nextTurn = self.shift(turnIds, -1)# Shift id.
+            # Check if player has left the game.
             if nextTurn[0] in skipIds:
-                nextTurn = self.shift(turnIds, -1)# Skip id
+                nextTurn = self.shift(turnIds, -1)# Skip id.
             self.game["CHANNELS"][ctx.message.channel.id]["turnIds"] = nextTurn
         # Save all
         self.game["CHANNELS"][ctx.message.channel.id]["PLAYERS"] = CH_PLAYERS
@@ -1202,13 +1202,13 @@ class FourInARow:
             qMsgTrig = self.settings["TRIG_QUEUE_MSG"]
         except Exception as e:
             logger.info(e)
-            logger.info("Error getting IDS @ update_score, check code and json dump")
+            logger.info("Error getting IDS @ update_score, check code and json dump.")
             await self.dump_data()
             return
         user = ctx.message.author
         now = round(time.time())
         gameDuration = now-CH_GAME["gameStarted"]
-        # Get the queue message / Rank
+        # Get the queue message / Rank.
         async def get_queue_msg(stats):
             msg = "hoax"# This should not reach the json.
             ponts = stats["points"]
@@ -1218,10 +1218,10 @@ class FourInARow:
             if total == 0:
                 total = 1# Ensure a safe calc.
             ratio = float(won)/(total)           
-            if total <= qMsgTrig[0][1]:# Newbie
+            if total <= qMsgTrig[0][1]:# Newbie.
                 msg = qMsgTrig[1][0]
                 return msg                
-            elif total > qMsgTrig[0][1]:# No Newbie
+            elif total > qMsgTrig[0][1]:# No Newbie.
                 lenList = len(qMsgTrig)
                 for m in range(0, lenList):
                     if total >= qMsgTrig[m][1]:
@@ -1276,7 +1276,7 @@ class FourInARow:
     # Draw the board to chat.
     async def draw_board(self, ctx, comment, DM=False):
         user = ctx.message.author
-        try: # Get exitsing game data
+        try: # Get exitsing game data.
             CH_GAME = self.game["CHANNELS"][ctx.message.channel.id]
             board = CH_GAME["board"]
             BOARD_SIZE = CH_GAME["boardSize"]
@@ -1286,7 +1286,7 @@ class FourInARow:
             skipIds = CH_GAME["skipIds"]
             activePlayers = CH_GAME["activePlayers"]
             data = True
-        except: # An empty board
+        except: # An empty board.
             board = self.empty_board(0)
             BOARD_SIZE = 0
             turn = ["none"]
@@ -1297,14 +1297,13 @@ class FourInARow:
             activePlayers = 0
             data = False
         userComment = "nomsg"
-
         slots = {"IDS": [], "NAMES": [], "TOKENS": [], "MSG": []}
         for slot in range(self.settings["MAX_PLAYERS"]):
             slots["IDS"].append("noId")
             slots["NAMES"].append("- EmptySlot #" + str(slot+1)+ " -")
             slots["TOKENS"].append(self.ICONS[1][1])  
             slots["MSG"].append(userComment)
-        # Fill slot display up with players
+        # Fill slot display up with players.
         if len(CH_PLAYERS["IDS"]) is not None:
             for usr in range(len(CH_PLAYERS["IDS"])):
                 slots["IDS"][usr] = CH_PLAYERS["IDS"][usr]
@@ -1333,24 +1332,24 @@ class FourInARow:
             for y in range(self.settings["BOARDWIDTH"][BOARD_SIZE]):#7 = default
                 for z in range(len(self.TOKENS)):
                     if board[x][y] == self.TOKENS[z][0]:
-                        tokenDef = emoji.emojize(self.TOKENS[z][1], use_aliases=True)# User Token
+                        tokenDef = emoji.emojize(self.TOKENS[z][1], use_aliases=True)# User Token.
                     elif board[x][y] == self.EMPTY:
-                        tokenDef = emoji.emojize(self.ICONS[0][1], use_aliases=True)# Black
+                        tokenDef = emoji.emojize(self.ICONS[0][1], use_aliases=True)# Black.
                 tokensWidth.append(tokenDef)
                 msgBoard = (msgBoard+tokenDef)
             tokensHeight.append(tokensWidth)    
             msgBoard = (msgBoard+'\n')
         # Set-up user name/slot display.
         playerIs = ''
-        if inQue == 'yes': # Draw slots
+        if inQue == 'yes': # Draw slots.
             slotsLen = self.settings["MAX_PLAYERS"]
-        elif inQue == 'no':# Game is started
+        elif inQue == 'no':# Game is started.
             slotsLen = activePlayers
         turnUserMsg = " "
         for usr in range(0, slotsLen):
-            # Get player message
+            # Get player message.
             if slots["MSG"][usr] != "nomsg":
-                if slots["IDS"][usr] == ctx.message.server.me.id:# Player is bot
+                if slots["IDS"][usr] == ctx.message.server.me.id:# Player is bot.
                     userComment = " ("+("Initialising Cheats...")+")"
                 else:
                     userComment = " ("+str(slots["MSG"][usr])+")"
@@ -1358,9 +1357,9 @@ class FourInARow:
                 userComment = ""
             # Get token/icon for slot.
             if slots["IDS"][usr] == "noId":
-                tToken = emoji.emojize(' '+self.ICONS[1][1]) # Pointing arrow
+                tToken = emoji.emojize(' '+self.ICONS[1][1]) # Pointing arrow.
             else:
-                tToken = emoji.emojize(self.TOKENS[CH_PLAYERS["TOKENS"][usr]][1])# Player token
+                tToken = emoji.emojize(self.TOKENS[CH_PLAYERS["TOKENS"][usr]][1])# Player token.
             # Game has started.
             if inQue == 'no' and turn[0] == slots["IDS"][usr] and slots["IDS"][usr] not in skipIds:
                 mentionPlayer = turn[0]
@@ -1391,7 +1390,7 @@ class FourInARow:
         elif not DM:
             await self.bot.send_message(ctx.message.channel, "{}\n{}\n**{}**\n{}{}\n\n".format('<@'+mentionPlayer+'>', msgBoard, turnUserMsg, playerIs, comment))
 
-    # Shift an array
+    # Shift an array.
     def shift(self, seq, n):
         shifted_seq = []
         for i in range(len(seq)):
@@ -1443,7 +1442,7 @@ class FourInARow:
     # Bot Player Specific Functions
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
        
-    # The bot needs cheats
+    # The bot needs cheats.
     def bot_move(self, ctx):
         CH_GAME = self.game["CHANNELS"][ctx.message.channel.id]
         board = CH_GAME["board"] 
@@ -1451,15 +1450,15 @@ class FourInARow:
         BOARDHEIGHT = self.settings["BOARDHEIGHT"][BOARD_SIZE]
         BOARDWIDTH = self.settings["BOARDWIDTH"][BOARD_SIZE]
         DIFFICULTY = CH_GAME["botDifficulty"]
-        
+
         return
-        
+
         botTokenAssigned = self.players["PLAYERS"][ctx.message.server.me.id]["tokenAssinged"]
         botToken = self.TOKENS[botTokenAssigned][0]
         potentialMoves = self.potential_moves(ctx, botToken, DIFFICULTY)
         print("potentialMoves")
         print(potentialMoves)
-        # Get the best fitness from the potential moves
+        # Get the best fitness from the potential moves.
         bestMoveFitness = -1
         for i in range(BOARDWIDTH):
             print(i)
@@ -1467,7 +1466,7 @@ class FourInARow:
                 bestMoveFitness = potentialMoves[i]
         print("bestmovefitness:")
         print(bestMoveFitness)
-        # Find all potential moves that have this best fitness
+        # Find all potential moves that have this best fitness.
         bestMoves = []
         for i in range(len(potentialMoves)):
             if potentialMoves[i] >= bestMoveFitness and self.valididate_move(ctx, i):
@@ -1496,40 +1495,41 @@ class FourInARow:
         print("ensmys/enemy tokens")
         print(enemys)
         print(enemyTokens)
-        # Two player test
+        # Two player test.
+        # needs some kind of deep copy of ctx to check posibility's, or duplicate game functions to only check on a board.
 
         for firstMove in range(BOARDWIDTH):      
             if not self.valididate_move(ctx, firstMove):
                 print("{} - not valid".format(firstMove))
                 continue
             if self.is_winner(ctx, enemyTokens[0]):                
-                potentialMoves[firstMove] = 1# Winning move gets a perfect fitness
+                potentialMoves[firstMove] = 1# Winning move gets a perfect fitness.
                 print("{} - lowest_empty_space".format(firstMove))
                 print(self.lowest_empty_space(ctx, firstMove))
-                break# Don't bother calculating other moves
-            else:# No winning move, check another player
+                break# Don't bother calculating other moves.
+            else:# No winning move, check another player.
                 if self.board_full(ctx):
                     potentialMoves[firstMove] = 0         
                 else:
                     print("Check enemy")
-                    for counterMove in range(BOARDWIDTH): # Check counterMoves
+                    for counterMove in range(BOARDWIDTH): # Check counterMoves.
                         ctx2 = ctx#
                         if not self.valididate_move(ctx2, counterMove):
                             print("{} - not valid Enemy".format(counterMove))
                             continue
-                        if self.is_winner(ctx2, enemyTokens[1]):                
-                            potentialMoves[counterMove] = 1# Winning enemy move gets a worst fitness
+                        if self.is_winner(ctx2, enemyTokens[1]):
+                            potentialMoves[counterMove] = 1# Winning enemy move gets a worst fitness.
                             print("{} - lowest_empty_space Enemy".format(counterMove))
                             print(self.lowest_empty_space(ctx2, counterMove))
-                            break# Don't bother calculating other moves
+                            break# Don't bother calculating other moves.
                         else:
                             # Make a recursive call to potential_moves()                        
                             results = self.potential_moves(ctx2, enemyTokens[1], lookAhead - 1)
                             print(results)
-                            potentialMoves[firstMove] += (sum(results) / BOARDWIDTH) / BOARDWIDTH                    
-        return potentialMoves                
+                            potentialMoves[firstMove] += (sum(results) / BOARDWIDTH) / BOARDWIDTH
+        return potentialMoves
 
-    # Validate move (bot), check if there is an empty space within the given column
+    # Validate move (bot), check if there is an empty space within the given column.
     def valididate_move(self, ctx, column):
         CH_GAME = self.game["CHANNELS"][ctx.message.channel.id]
         board = CH_GAME["board"]
@@ -1544,7 +1544,7 @@ class FourInARow:
     # Development Commands
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    #Removed
+    #Removed » https://github.com/Canule/Red-DiscordBot/blob/develop/cogs/devt/devTool4row.py
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Set-up
@@ -1587,7 +1587,7 @@ def check_files():
                                 ["no entry", ":no_entry:"], ["cherries", ":cherries:"], ["cookie", ":cookie:"], ["clover", ":four_leaf_clover:"], ["cyclone", ":cyclone:"], ["sunflower", ":sunflower:"], 
                                 ["mushroom", ":mushroom:"], ["heart", ":heart:"], ["snowflake", ":snowflake:"], ["Africa globe", ":earth_africa:"], ["Murica globe", ":earth_americas:"], 
                                 ["asia globe", ":earth_asia:"]]}
-    
+
     f = SETTINGS
     if not fileIO(f, "check"):
         print("Creating default fourinarow's settings.json...")
@@ -1601,7 +1601,7 @@ def check_files():
         fileIO(f, "save", games)
 
     players = {"PLAYERS": {}}
-                
+
     f = PLAYERS
     if not fileIO(f, "check"):
         print("Creating empty players.json...")
@@ -1624,7 +1624,7 @@ class ModuleNotFound(Exception):
         self.message = m
     def __str__(self):
         return self.message
-        
+
 def setup(bot):
     global emoji
     global logger
@@ -1637,10 +1637,10 @@ def setup(bot):
         handler.setFormatter(logging.Formatter('%(asctime)s %(message)s', datefmt="[%d/%m/%Y %H:%M]"))
         logger.addHandler(handler)
     try:
-        """The max amount of ':thumbsdown:' in one chat message = x166 with len2000 as max. allowed for msg. When using hex 👎 / Unicode instead, it becomes x1999.
+        import emoji    
+        """The max amount of ':thumbsdown:' in one chat message = x166 with len2000 as max. allowed for msg. When using bytewise 👎 / Unicode instead, it becomes x1999.
             Most of these are supported by Discord http://www.emoji-cheat-sheet.com == https://github.com/carpedm20/emoji '\Python35\Lib\site-packages\emoji\\unicode_codes.py'
-            *No need to modify the UFT-8 dataIO.py or store and manually maintain the modest array of all Unicode emoji in this script itself :)"""
-        import emoji
+            *No need to modify the UFT-8 dataIO.py or store and manually maintain the modest array of all Unicode emoji in this script itself."""
     except:
         raise ModuleNotFound("emoji is not installed. Do 'pip3 install emoji --upgrade' to use this cog.")
     bot.add_cog(FourInARow(bot))
