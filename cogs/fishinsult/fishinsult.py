@@ -3,7 +3,7 @@ from discord.ext import commands
 from .utils.dataIO import fileIO
 from random import choice as randchoice
 import json
-import requests
+import aiohttp
 import html
 import random
 import os
@@ -23,7 +23,10 @@ class Insult:
         if user != None:
             if user.id == self.bot.user.id:
                 user = ctx.message.author
-                msg = " How original. No one else had thought of trying to get the bot to insult itself. I applaud your creativity. Yawn. Perhaps this is why you don't have friends. You don't add anything new to any conversation. You are more of a bot than me, predictable answers, and absolutely dull to have an actual conversation with."
+                msg = (" How original. No one else had thought of trying to get the bot to insult "
+                        "itself. I applaud your creativity. Yawn. Perhaps this is why you don't have "
+                        "friends. You don't add anything new to any conversation. You are more of a "
+                        "bot than me, predictable answers, and absolutely dull to have an actual conversation with.")
                 await self.bot.say(user.mention + msg)
             else:
                 api = random.randint(0, 2)
@@ -31,11 +34,14 @@ class Insult:
                     msg = ' {}'.format(randchoice(self.insults))
                 elif api == 1:
                     url = 'http://www.insultgenerator.org/'
-                    insult = html.unescape(requests.get(url).text.split('\n')[13][8:-6])
+                    async with aiohttp.get(url) as r:
+                        insult = await r.text()
+                    insult = html.unescape(insult.split('\n')[13][8:-6])
                     msg = ' {}'.format(insult)
                 elif api == 2:
                     url = 'http://quandyfactory.com/insult/json'
-                    insult = json.loads(requests.get(url).text)
+                    async with aiohttp.get(url) as r:
+                        insult = await r.json()
                     msg = ' {}'.format(insult['insult'])
                 await self.bot.say(user.mention + msg)
         else:
