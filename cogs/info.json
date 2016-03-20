@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "John Guy",
+    "DESCRIPTION" : "Searches http://www.hearthpwn.com/ for images of Hearthstone cards.\nUse [p]card [name] to search for regular cards\nUse [p]cardg [name] to search for golden cards",
+    "DISABLED" : false,
+    "NAME" : "Hearthstone card retriever"
+}
