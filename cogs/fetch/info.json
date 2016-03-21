@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "orels1 https://github.com/orels1",
+    "DESCRIPTION" : "Usage: [p]fetch <stuff> <user>\n Fetches required to user",
+    "DISABLED" : false,
+    "NAME" : "Fetches some stuff to user"
+}
