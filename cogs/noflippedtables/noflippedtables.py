@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from random import uniform as randfloat
 import asyncio
 import os
 from .utils.dataIO import fileIO
@@ -12,6 +13,7 @@ class Untableflip:
 	def __init__(self, bot):
 		self.bot = bot
 		self.settings = fileIO("data/noflippedtables/settings.json", "load")
+		self.flippedTables = {}
 
 	@commands.group(pass_context=True)
 	async def tableset(self, ctx):
@@ -46,14 +48,44 @@ class Untableflip:
 
 	#so much fluff just for this OpieOP
 	async def scrutinize_messages(self, message):
-		if not self.settings["BOT_EXEMPT"] or message.author.id != self.bot.user.id:
-			tables = ""
-			for m in re.finditer('┻━*┻', message.content):
-				tables += m.group().replace('┻','┬').replace('━','─') + " ノ( ゜-゜ノ)" + "\n"
-				if not self.settings["ALL_TABLES"]:
-					break
-			if tables != "":
-				await self.bot.send_message(message.channel, tables)
+		channel = message.channel
+		if channel.id not in self.flippedTables:
+			 self.flippedTables[channel.id] = {}
+		#┬─┬ ┬┬ ┻┻ ┻━┻ ┬───┬ ┻━┻ will leave 3 tables left flipped
+		#count flipped tables
+		for m in re.finditer('┻━*┻|┬─*┬', message.content):
+			t = m.group()
+			if '┻' in t and not (message.author.id == self.bot.user.id and self.settings["BOT_EXEMPT"]):
+				if t in self.flippedTables[channel.id]:
+					self.flippedTables[channel.id][t] += 1
+				else:
+					self.flippedTables[channel.id][t] = 1
+					if not self.settings["ALL_TABLES"]:
+						break
+			else:
+				f = t.replace('┬','┻').replace('─','━')
+				if f in self.flippedTables[channel.id]:
+					if self.flippedTables[channel.id][f] <= 0:
+						del self.flippedTables[channel.id][f]
+					else:
+						self.flippedTables[channel.id][f] -= 1
+		#wait random time. some tables may be unflipped by now.	
+		await asyncio.sleep(randfloat(0,1.5))
+		tables = ""
+
+		deleteTables = []
+		#unflip tables in self.flippedTables[channel.id]
+		for t, n in self.flippedTables[channel.id].items():
+			unflipped = t.replace('┻','┬').replace('━','─') + " ノ( ゜-゜ノ)" + "\n"
+			for i in range(0,n):
+				tables += unflipped
+				#in case being processed in parallel
+				self.flippedTables[channel.id][t] -= 1
+			deleteTables.append(t)
+		for t in deleteTables:
+			del self.flippedTables[channel.id][t]
+		if tables != "":
+			await self.bot.send_message(channel, tables)
 
 def check_folders():
 	if not os.path.exists("data/noflippedtables"):
