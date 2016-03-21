@@ -1,0 +1,6 @@
+{
+    "AUTHOR" : "Airen and JennJenn, extended by SpatulaFish",
+    "DESCRIPTION" : "Usage: [p]insult <user>\n[p]insult",
+    "DISABLED" : false,
+    "NAME" : "Insults generator"
+}
