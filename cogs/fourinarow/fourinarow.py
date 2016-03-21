@@ -111,15 +111,25 @@ class FourInARow:
         """Start the game."""
         user = ctx.message.author
         BOARDWIDTH = self.settings["BOARDWIDTH"]
-        BOARDSIZE = self.game["CHANNELS"][ctx.message.channel.id]["boardSize"]
-        if not self.ingame_check(ctx, user.id):
-            await self.bot.say( "{} ` You need to be in a game to start.`".format(user.mention))
-        elif self.ingame_check(ctx, user.id):
-            await self.start_game(ctx, user.id)
-            await self.delete_message(ctx)
-            self.stats["gamesStarted"] += 1
-            fileIO(STATS, "save", self.stats)            
-            await self.draw_board(ctx, "\n` Game started\nIf it's your turn use '{}mytoken [number 1/{}]`".format(self.PREFIXES[0], BOARDWIDTH[BOARDSIZE]))
+        try:
+            BOARDSIZE = self.game["CHANNELS"][ctx.message.channel.id]["boardSize"]
+            activePlayers = self.game["CHANNELS"][ctx.message.channel.id]["activePlayers"]
+            data = True
+        except Exception as e:
+            data = False
+        if data:
+            if not self.ingame_check(ctx, user.id):
+                await self.bot.say( "{} ` You need to be in a game to start.`".format(user.mention))
+                return
+            elif activePlayers <= 1:
+                await self.bot.say( "{} ` There must be at least on more player to start this game.`".format(user.mention))
+                return
+            elif self.ingame_check(ctx, user.id):
+                await self.start_game(ctx, user.id)
+                await self.delete_message(ctx)           
+                await self.draw_board(ctx, "\n` Game started\nIf it's your turn use '{}mytoken [number 1/{}]`".format(self.PREFIXES[0], BOARDWIDTH[BOARDSIZE]))
+        else:
+            await self.bot.say( "{} ` No game to start.`".format(user.mention))                
 
     @_4row.command(pass_context=True, no_pm=True)
     async def stop(self, ctx):
@@ -131,6 +141,7 @@ class FourInARow:
             try:
                 now = round(time.time())
                 CH_GAME = self.game["CHANNELS"][ctx.message.channel.id]
+                activePlayers = CH_GAME["activePlayers"]
                 chGamestarted = CH_GAME["gameStarted"]
                 chLastActivity = CH_GAME["lastActivity"]
                 CH_VOTES_STP = CH_GAME["VOTES_STP"]
@@ -150,8 +161,15 @@ class FourInARow:
                     if differenceStarted >= gameExpires:
                         await self.stop_game(ctx)
                         self.stats["gamesTimedOut"] += 1
-                        fileIO(STATS, "save", self.stats)                        
+                        fileIO(STATS, "save", self.stats)
                         await self.bot.say("{} ` Game stopped`".format(user.mention))
+                        return
+                    elif activePlayers <= 1: # If for any reason one player is left behind in an active game, allow a stop.
+                        await self.stop_game(ctx)
+                        self.stats["gamesStopped"] += 1
+                        fileIO(STATS, "save", self.stats)
+                        await self.bot.say("{} ` Game stopped`".format(user.mention))
+                        return
                     else:# Not expired yet so check unlock votes.
                         # Game is unlocked?
                         if differenceLastActivity >= gameVoteUnlocks:
@@ -924,7 +942,9 @@ class FourInARow:
     # Start the game.
     async def start_game(self, ctx, userId):
         self.game["CHANNELS"][ctx.message.channel.id]["inQue"] = 'no'
-        await self.reset_voting(ctx) 
+        await self.reset_voting(ctx)
+        self.stats["gamesStarted"] += 1
+        fileIO(STATS, "save", self.stats)         
         fileIO(GAMES, "save", self.game)
 
     # Stop the game.
@@ -1578,7 +1598,7 @@ def check_files():
                 "MAX_LEN_USER_MSG": 30, 
                 "REWARDS": {"WINNING": 40, "LOSING": 20, "DRAW": 50, "RUIENING": -15}, 
                 "TIME_PENALTY": {"SLOW_MOVES_TIME": [60, 80, 120], "POINTS": [-3,-2,-1]}, 
-                "EXPIRE_TIME": 7200, 
+                "EXPIRE_TIME": 900, 
                 "VOTE_UNLOCK_TIME": 120, 
                 "MIN_VOTES_TO_UNLOCK": 2, 
                 "BOT_SETTINGS": {"ENABLED": False, "DEFAULT_DIFFICULTY": 1, "TOKEN": 3, "DIFFICULTY": {"EASY": 1 , "NOVICE": 2, "HARD": 4}}, 
