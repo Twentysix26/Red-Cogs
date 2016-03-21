@@ -1,10 +1,10 @@
-import discord
-from discord.ext import commands
 from .utils.dataIO import fileIO
 from .utils import checks
 from __main__ import send_cmd_help
 from __main__ import settings as bot_settings
-# Sys
+# Sys.
+import discord
+from discord.ext import commands
 from operator import itemgetter, attrgetter
 from copy import deepcopy
 import random
