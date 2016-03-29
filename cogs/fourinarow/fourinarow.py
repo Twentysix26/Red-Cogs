@@ -1286,11 +1286,11 @@ class FourInARow:
             lenList = len(qMsgTrig) # lenList is absolute max. (flood for loop.)
             msg = qMsgTrig[0][0] # Player is at least a n00b.
             for m in range(0, lenList):
-                # A player need the minumium ratio to step up.
-                if ratio >= qMsgTrig[m][2]:
+                # A player need the minumium ratio+total games to step up.
+                if ratio >= qMsgTrig[m][2] and total >= qMsgTrig[m][1]:
                     msg = qMsgTrig[m][0] # Set lvl value as msg.
-                    if ratio >= qMsgTrig[m+1][2]:
-                        # Ratio apears to be higher than next [m] value so lvl up.
+                    if ratio >= qMsgTrig[m+1][2] and total >= qMsgTrig[m+1][1]:
+                        # Ratio+total games apears to be higher than next [m] value so lvl up.
                         msg = qMsgTrig[m+1][0]
                     else:
                         # Player will not step up, for loop ends here, status text from [m] is the amount of loops made.
@@ -1571,9 +1571,7 @@ class FourInARow:
     # Development Commands
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
     #Removed » https://github.com/Canule/Red-DiscordBot/blob/develop/cogs/devt/devTool4row.py
-
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Set-up
