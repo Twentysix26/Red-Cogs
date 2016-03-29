@@ -360,7 +360,7 @@ class FourInARow:
                 if data and inQue == "yes":
                     # Check is bot exist in players.
                     if not self.account_check(bot.id):
-                        # Register bot
+                        # Register bot.
                         msg = await self.leave_game(ctx, bot)# returns {"msg": str} 
                     # Check if account is made.
                     if self.account_check(bot.id):
@@ -484,7 +484,7 @@ class FourInARow:
     async def listtokens(self, ctx):
         """Shows the avaiable Tokens."""
         user= ctx.message.author
-        await self.bot.say("{} ` Check DM for available tokens.`".format(user.mention, max))
+        await self.bot.say("{} ` Check DM for available tokens.`".format(user.mention))
         msg = await self.msg_available_tokens()
         await self.bot.send_message(ctx.message.author, msg)
 
@@ -550,13 +550,13 @@ class FourInARow:
             logger.info("Error @ _leaderboard, players < 1")
 
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    # Moderator Commands @ [p]4row
+    # Moderator Commands @ 4row
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @_4row.command(name="stpg", pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def _stpg(self, ctx):
-        """Force stop/delete a game form the channel.
+        """Force stop/delete a game from the channel.
         Admin/owner restricted."""
         user= ctx.message.author
         server = ctx.message.server
@@ -1220,7 +1220,6 @@ class FourInARow:
             CH_GAME = self.game["CHANNELS"][ctx.message.channel.id]
             CH_PLAYERS = CH_GAME["PLAYERS"]
             winnerId = CH_GAME["winner"]
-            qMsgTrig = self.settings["TRIG_QUEUE_MSG"]
         except Exception as e:
             logger.info(e)
             logger.info("Error getting IDS @ update_score, check code and json dump.")
@@ -1229,34 +1228,8 @@ class FourInARow:
         user = ctx.message.author
         now = round(time.time())
         gameDuration = now-CH_GAME["gameStarted"]
-        # Get the queue message / Rank.
-        async def get_queue_msg(stats):
-            msg = "hoax"# This should not reach the json.
-            ponts = stats["points"]
-            won = stats["won"]+stats["draw"]
-            lost = stats["loss"]+stats["wasted"]
-            total = won+lost
-            if total == 0:
-                total = 1# Ensure a safe calc.
-            ratio = float(won)/(total)           
-            if total <= qMsgTrig[0][1]:# Newbie.
-                msg = qMsgTrig[1][0]
-                return msg                
-            elif total > qMsgTrig[0][1]:# No Newbie.
-                lenList = len(qMsgTrig)
-                for m in range(0, lenList):
-                    if total >= qMsgTrig[m][1]:
-                        if ratio >= qMsgTrig[m][2]:
-                            msg = qMsgTrig[m][0]
-                            if ratio >= qMsgTrig[m+1][2]:
-                                if m == 0:# Prevent Newbie output.
-                                    msg = qMsgTrig[2][0]
-                                else:
-                                    msg = qMsgTrig[m+1][0]
-                            if ratio <= qMsgTrig[m+1][2]:# Not bigger than biggest value.
-                                return msg
         # Set score to all players in game.
-        for usr in range (len(CH_PLAYERS["IDS"])):
+        for usr in range(0, len(CH_PLAYERS["IDS"])):
             userId = CH_PLAYERS["IDS"][usr]
             if winnerId == "draw":# Draw.
                 stats = self.players["PLAYERS"][userId]["STATS"]
@@ -1265,8 +1238,7 @@ class FourInARow:
                 userTotalGames = stats["won"]+stats["loss"]+stats["draw"]+stats["wasted"]
                 avarageTimeGame = (stats["avarageTimeGame"] + gameDuration)/userTotalGames
                 self.players["PLAYERS"][userId]["STATS"]["avarageTimeGame"] += avarageTimeGame
-                msg = await get_queue_msg(stats)
-                print(msg)
+                msg = self.get_queue_msg(stats)
                 self.players["PLAYERS"][userId]["MSG"]["joiningMsg"] = msg
                 continue# Skip next checks.
             elif winnerId == userId:# Winner.
@@ -1276,8 +1248,7 @@ class FourInARow:
                 userTotalGames = stats["won"]+stats["loss"]+stats["draw"]+stats["wasted"]
                 avarageTimeGame = (stats["avarageTimeGame"] + gameDuration)/userTotalGames
                 self.players["PLAYERS"][userId]["STATS"]["avarageTimeGame"] += avarageTimeGame
-                msg = await get_queue_msg(stats)
-                print(msg)
+                msg = self.get_queue_msg(stats)             
                 self.players["PLAYERS"][userId]["MSG"]["joiningMsg"] = msg
                 continue
             elif winnerId != userId:# Must be one of the losers.
@@ -1287,12 +1258,47 @@ class FourInARow:
                 userTotalGames = stats["won"]+stats["loss"]+stats["draw"]+stats["wasted"]
                 avarageTimeGame = (stats["avarageTimeGame"] + gameDuration)/userTotalGames
                 self.players["PLAYERS"][userId]["STATS"]["avarageTimeGame"] += avarageTimeGame
-                msg = await get_queue_msg(stats)
-                print(msg)
+                msg = self.get_queue_msg(stats)
                 self.players["PLAYERS"][userId]["MSG"]["joiningMsg"] = msg
                 continue
         fileIO(PLAYERS, "save", self.players)
         return
+
+    # Get the queue message / Rank.
+    def get_queue_msg(self, stats):
+        qMsgTrig = deepcopy(self.settings["TRIG_QUEUE_MSG"])
+        msg = "hoax"# This should not reach the json.
+        ponts = stats["points"]
+        won = stats["won"]+stats["draw"]
+        lost = stats["loss"]+stats["wasted"]
+        total = won+lost
+        if total == 0:
+            total = 1# Ensure a safe calc.
+        ratio = float(won)/(total)
+        # Newbie.
+        if total <= qMsgTrig[1][1]:
+            msg = qMsgTrig[1][0]
+        # No Newbie anymore.                
+        elif total > qMsgTrig[1][1]:
+            #Remove unwanted from list.     
+            del qMsgTrig[0] # Minumum
+            del qMsgTrig[0] # Newbie
+            lenList = len(qMsgTrig) # lenList is absolute max. (flood for loop.)
+            msg = qMsgTrig[0][0] # Player is at least a n00b.
+            for m in range(0, lenList):
+                # A player need the minumium ratio to step up.
+                if ratio >= qMsgTrig[m][2]:
+                    msg = qMsgTrig[m][0] # Set lvl value as msg.
+                    if ratio >= qMsgTrig[m+1][2]:
+                        # Ratio apears to be higher than next [m] value so lvl up.
+                        msg = qMsgTrig[m+1][0]
+                    else:
+                        # Player will not step up, for loop ends here, status text from [m] is the amount of loops made.
+                        msg = qMsgTrig[m][0]
+                        break # No need to check any further.
+                if m >= lenList-1:
+                    break # Prevent indexError.
+        return msg
 
     # Draw the board to chat.
     async def draw_board(self, ctx, comment, DM=False):
@@ -1565,7 +1571,9 @@ class FourInARow:
     # Development Commands
     #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
     #Removed » https://github.com/Canule/Red-DiscordBot/blob/develop/cogs/devt/devTool4row.py
+
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Set-up
