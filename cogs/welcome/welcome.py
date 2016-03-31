@@ -69,7 +69,7 @@ class Welcome:
             await self.send_testing_msg(ctx)
         else:
             await self.bot.say("I will no longer welcome new users.")
-        fileIO("data/audio/settings.json", "save", self.settings)
+        fileIO("data/welcome/settings.json", "save", self.settings)
 
     @welcomeset.command(pass_context=True)
     async def channel(self, ctx, channel : discord.Channel=None): 
@@ -83,7 +83,7 @@ class Welcome:
             await self.bot.say("I do not have permissions to send messages to {0.mention}".format(channel))
             return
         self.settings[server.id]["CHANNEL"] = channel.id
-        fileIO("data/audio/settings.json", "save", self.settings)
+        fileIO("data/welcome/settings.json", "save", self.settings)
         channel = self.get_welcome_channel(server)
         await self.bot.send_message(channel,"I will now send welcome messages to {0.mention}".format(channel))
         await self.send_testing_msg(ctx)
