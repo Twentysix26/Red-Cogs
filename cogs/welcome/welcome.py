@@ -46,7 +46,7 @@ class Welcome:
 
         Example formats:
             {0.mention}.. What are you doing here?
-            {1.name} has a new member! {0.name}:{0.id}
+            {1.name} has a new member! {0.name}#{0.discriminator} - {0.id}
             Someone new joined! Who is it?! D: IS HE HERE TO HURT US?!
         """
         if format_msg == ():
