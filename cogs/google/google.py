@@ -34,7 +34,7 @@ class SimplyGoogle:
         elif search_type[0] == "maps":
             search_valid = str(ctx.message.content[len(ctx.prefix+ctx.command.name)+1:].lower())
             if search_valid == "maps":
-                await self.bot.say("Please actually search something, even google cant fix your stupidity")
+                await self.bot.say("Please actually search something")
             else:
                 await self.bot.say(search_type)
                 uri = "https://www.google.com/maps/search/"
