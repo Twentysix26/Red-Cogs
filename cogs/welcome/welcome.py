@@ -36,7 +36,7 @@ class Welcome:
             await self.bot.say(msg)
 
     @welcomeset.command(pass_context=True)
-    async def greeting(self, ctx, *format_msg):
+    async def greeting(self, ctx, *, format_msg):
         """Sets the welcome message format for the server.
 
         {0} is user
@@ -49,12 +49,8 @@ class Welcome:
             {1.name} has a new member! {0.name}#{0.discriminator} - {0.id}
             Someone new joined! Who is it?! D: IS HE HERE TO HURT US?!
         """
-        if format_msg == ():
-            await send_cmd_help(ctx)
-            return
-        greeting = " ".join(format_msg)
         server = ctx.message.server
-        self.settings[server.id]["GREETING"] = greeting
+        self.settings[server.id]["GREETING"] = format_msg
         fileIO("data/welcome/settings.json","save",self.settings)
         await self.bot.say("Welcome message set for the server.")
         await self.send_testing_msg(ctx)
