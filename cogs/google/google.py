@@ -24,7 +24,6 @@ class SimplyGoogle:
             if search_valid == "image":
                 await self.bot.say("Please actually search something")
             else:
-                await self.bot.say(search_type)
                 uri = "https://www.google.com/search?tbm=isch&q="
                 quary = str(ctx.message.content[len(ctx.prefix+ctx.command.name)+7:].lower())
                 encode = urllib.parse.quote_plus(quary,encoding='utf-8',errors='replace')
@@ -36,7 +35,6 @@ class SimplyGoogle:
             if search_valid == "maps":
                 await self.bot.say("Please actually search something")
             else:
-                await self.bot.say(search_type)
                 uri = "https://www.google.com/maps/search/"
                 quary = str(ctx.message.content[len(ctx.prefix+ctx.command.name)+6:].lower())
                 encode = urllib.parse.quote_plus(quary,encoding='utf-8',errors='replace')
@@ -44,7 +42,6 @@ class SimplyGoogle:
             #End of Maps
         #Start of generic search
         else:
-            await self.bot.say(search_type)
             uri = "https://www.google.com/search?q="
             quary = str(ctx.message.content[len(ctx.prefix+ctx.command.name)+1:])
             encode = urllib.parse.quote_plus(quary,encoding='utf-8',errors='replace')
