@@ -34,7 +34,7 @@ class Pony:
             
     @commands.command()
     async def ponyr(self, *text):
-        """Retrieves a random image from Derpibooru"""
+        """Retrieves a random result from Derpibooru"""
         if len(text) > 0:
             if len(text[0]) > 1 and len(text[0]) < 20:
                 try:
