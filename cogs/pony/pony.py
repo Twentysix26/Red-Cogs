@@ -10,7 +10,7 @@ class Pony:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(no_pm=True)
     async def pony(self, *text):
         """Retrieves the first result from Derpibooru"""
         if len(text) > 0:
@@ -32,7 +32,7 @@ class Pony:
         else:   
             await self.bot.say("pony [text]")
             
-    @commands.command()
+    @commands.command(no_pm=True)
     async def ponyr(self, *text):
         """Retrieves a random result from Derpibooru"""
         if len(text) > 0:
@@ -42,7 +42,7 @@ class Pony:
                     search = "https://derpiboo.ru/search.json?q=" + msg + "&random_image=y" 
                     async with aiohttp.get(search) as r:
                         result = await r.json()
-                    if result["id"] != []:
+                    if "id" in result:
                         imgid = str(result["id"])
                         async with aiohttp.get("https://derpiboo.ru/images/" + imgid + ".json") as r:
                             result = await r.json()
