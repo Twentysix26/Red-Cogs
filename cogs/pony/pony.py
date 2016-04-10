@@ -42,7 +42,7 @@ class Pony:
                     search = "https://derpiboo.ru/search.json?q=" + msg + "&random_image=y" 
                     async with aiohttp.get(search) as r:
                         result = await r.json()
-                    if result["id"] != []:
+                    if "id" in result:
                         imgid = str(result["id"])
                         async with aiohttp.get("https://derpiboo.ru/images/" + imgid + ".json") as r:
                             result = await r.json()
