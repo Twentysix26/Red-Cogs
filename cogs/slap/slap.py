@@ -5,6 +5,17 @@ from .utils.dataIO import fileIO
 from .utils import checks
 import os
 
+defaults = [
+    "Twentysix's Floppy Disk",
+    "Eslyium's Hentai Collection",
+    "A Nuke",
+    "A Loaf Of Bread",
+    "My Hand",
+    "Will's SquidBot",
+    "JennJenn's Penguin Army",
+    "Red's Transistor",
+    "Asu\u10e6's Wrath",
+    "Skordy's Keyboard"]
 
 class Slap:
     """Slap command."""
@@ -43,19 +54,16 @@ class Slap:
             self.save_items()
             await self.bot.say("item removed.")
 
-
 def check_folders():
     if not os.path.exists("data/slap"):
         print("Creating data/slap folder...")
         os.makedirs("data/slap")
 
-
 def check_files():
     f = "data/slap/items.json"
     if not fileIO(f, "check"):
         print("Creating empty items.json...")
-        fileIO(f, "save", [])
-
+        fileIO(f, "save", defaults)
 
 def setup(bot):
     check_folders()
