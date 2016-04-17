@@ -41,15 +41,20 @@ class Slap:
     @slap.command()
     async def add(self, item):
         """Adds an item"""
-        self.items.append(item)
-        self.save_items()
-        await self.bot.say("Item added.")
+        if item in self.items:
+          await self.bot.say("That is already an item.")
+        else:
+          self.items.append(item)
+          self.save_items()
+          await self.bot.say("Item added.")
 
     @slap.command()
     @checks.is_owner()
     async def remove(self, item):
         """Removes item"""
-        if item in self.items:
+        if item not in self.items:
+          await self.bot.say("That is not an item")
+        else:
             self.items.remove(item)
             self.save_items()
             await self.bot.say("item removed.")
