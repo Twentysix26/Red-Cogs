@@ -1,6 +1,0 @@
-{
-    "AUTHOR" : "Alzarath",
-    "DESCRIPTION" : "Usage: [p]pony [text...] to get the first result\nUsage: [p]ponyr [text...] to get a random result\n\nSearch http://derpiboo.ru/ for pony pictures.",
-    "DISABLED" : false,
-    "NAME" : "Searches for and posts ponies"
-}
