@@ -16,7 +16,8 @@ class SimplyGoogle:
 
         Special search options are avaiable; Image, Maps
         Example: google image You know, for kids!
-        Another example: google maps New York"""
+        Another example: google maps New York
+        LEGACY EDITION! SEE HERE! https://twentysix26.github.io/Red-Docs/red_cog_approved_repos/#refactored-cogs"""
         search_type = ctx.message.content[len(ctx.prefix+ctx.command.name)+1:].lower().split(" ")
         #Start of Image
         if search_type[0] == "image":

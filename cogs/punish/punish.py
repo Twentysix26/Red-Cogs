@@ -13,7 +13,8 @@ class Punish:
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_server=True)
     async def punish(self, ctx, user: discord.Member):
-        """Place a user in timeout, if the user is already in timeout, this will also remove him from it"""
+        """Place a user in timeout, if the user is already in timeout, this will also remove him from it
+        LEGACY EDITION! SEE HERE! https://twentysix26.github.io/Red-Docs/red_cog_approved_repos/#refactored-cogs"""
         server = ctx.message.server
         # Check if timeout exists.
         if 'Timeout' not in [r.name for r in server.roles]:
