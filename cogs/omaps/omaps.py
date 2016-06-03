@@ -136,7 +136,6 @@ class OpenStreetMaps:
             longitude = (links[0]['lon'])
             latitude = (links[0]['lat'])
 
-        await self.bot.say("`Give me a moment to draw the lines...`")
         await self.bot.send_typing(channel)
         #print([latitude, longitude, zoomMap])
 
@@ -195,10 +194,8 @@ def check_folders():
         os.makedirs(DIR_DATA)
 
 def check_files():
-
-    f = POINTER
-    if not fileIO(f, "check"):
-        print("pointer.png is missing!")  
+    if not os.path.isfile(POINTER):
+        print("pointer.png is missing!") 
 
 class ModuleNotFound(Exception):
     def __init__(self, m):
