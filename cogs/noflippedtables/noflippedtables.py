@@ -49,6 +49,9 @@ class Untableflip:
 	#so much fluff just for this OpieOP
 	async def scrutinize_messages(self, message):
 		channel = message.channel
+		user = message.author
+		if hasattr(user, 'bot') and user.bot is True:
+                    return
 		if channel.id not in self.flippedTables:
 			 self.flippedTables[channel.id] = {}
 		#┬─┬ ┬┬ ┻┻ ┻━┻ ┬───┬ ┻━┻ will leave 3 tables left flipped
