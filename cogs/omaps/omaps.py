@@ -48,7 +48,7 @@ class OpenStreetMaps:
         adressNum = 1
         limitResult  = 0    
 
-        #Set tile zoom
+        # Set tile zoom
         if zoom == 'upclose':
             zoomMap = 18  
         elif zoom == 'street':
@@ -62,7 +62,7 @@ class OpenStreetMaps:
         else:
             zoomMap = 16
 
-        #Get input data
+        # Get input data
         search = country
         await self.bot.say("` What city?`")
         response = await self.bot.wait_for_message(author=ctx.message.author)
@@ -72,7 +72,7 @@ class OpenStreetMaps:
         else:
             search = search+","+response
         #http://wiki.openstreetmap.org/wiki/Nominatim
-        await self.bot.say("` Enter your search term for the given location (building, company, address...)`")
+        await self.bot.say("` Enter your search term for the given location (building, company, address...) or type: none`")
         response = await self.bot.wait_for_message(author=ctx.message.author)
         response = response.content.lower().strip().replace(" ", "+")
         if response == "none":
@@ -81,7 +81,7 @@ class OpenStreetMaps:
             search = search+","+response
         #print (search)
 
-        #Get xml result from openstreetmap.org
+        # Get xml result from openstreetmap.org
         try:
             domain = "nominatim.openstreetmap.org"
             search = "/search?q={}&format=xml&polygon=1&addressdetails=1".format(search)
@@ -123,14 +123,17 @@ class OpenStreetMaps:
             await self.bot.say(list)
             response = await self.bot.wait_for_message(author=ctx.message.author)
             input = response.content.lower().strip()
-            #Set values for geotiler
-            input = int(input)-1
+            # Set values for geotiler
+            try:
+                input = int(input)-1
+            except:
+                input = 0
             place_id = (links[input]["place_id"])
             display_name = (links[input]["display_name"])
             longitude = (links[input]['lon'])
             latitude = (links[input]['lat'])
         else:
-            #Set values for geotiler        
+            # Set values for geotiler        
             place_id = (links[0]["place_id"])
             display_name = (links[0]["display_name"])
             longitude = (links[0]['lon'])
@@ -144,27 +147,29 @@ class OpenStreetMaps:
         image = await geotiler.render_map_async(map)
         image.save(MAP)
         await self.bot.send_typing(channel)
-        #Add pointer and text.
+        # Add pointer and text.
         savedMap = Image(filename=MAP)
         pointer = Image(filename=POINTER)
         for o in COMPOSITE_OPERATORS:
             w = savedMap.clone()
             r = pointer.clone()
         with Drawing() as draw:
-            draw.composite(operator='atop', left=311, top=311, width=90, height=90, image=r)
+            draw.composite(operator='atop', left=311, top=311, width=90, height=90, image=r) #720            
             draw(w)
-            #Text
+            # Text
             draw.fill_color = Color("#7289DA")
             draw.stroke_color = Color("#5370D7")
-            draw.stroke_width = 0.2
+            draw.stroke_width = 0.3
+            draw.fill_opacity = 0.7
+            draw.stroke_opacity = 0.7
             draw.font_style = 'oblique'
             draw.font_size = 32
             splitDisplayName = display_name.split(',')
-            #Object name/number
+            # Object name/number
             draw.text(x=20, y=35, body=splitDisplayName[0])
             draw(w)
             del splitDisplayName[0]
-            #Print location info on map.
+            # Print location info on map.
             line0 = ""
             line1 = ""
             draw.font_size = 18
@@ -173,14 +178,23 @@ class OpenStreetMaps:
                     line1 = line1 + i + ","
                 else:
                     line0 = line0 + i  + ","
-            #line 0
+            # line 0
             if len(str(line0)) > 2:            
                 draw.text(x=15, y=60, body=line0)
                 draw(w)
-            #line 1
+            # line 1
             if len(str(line1)) > 2:
                 draw.text(x=15, y=80, body=line1)
                 draw(w)
+            # Copyright Open Street Map
+            draw.fill_color = Color("#000000")
+            draw.stroke_color = Color("#333333")
+            draw.fill_opacity = 0.3
+            draw.stroke_opacity = 0.3
+            draw.font_style = 'normal'
+            draw.font_size = 14
+            draw.text(x=550, y=700, body="© OpenStreetMap.org") #720
+            draw(w)
             w.save(filename=MAP)
         await self.bot.send_file(channel, MAP)
  
@@ -227,5 +241,4 @@ def setup(bot):
     except:
         raise ModuleNotFound("Wand is not installed. Do 'pip3 install Wand --upgrade' and make sure you have ImageMagick installed http://docs.wand-py.org/en/0.4.2/guide/install.html")    
     bot.add_cog(OpenStreetMaps(bot))
-
 
