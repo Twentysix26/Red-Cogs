@@ -365,7 +365,7 @@ class Dota:
 
 			# Construct message
 			message = "Showing the most recent match for **" + player + "** (match id: **" + str(match["match_id"]) + "**)\n"
-			if "radiant_win" in match:
+			if "radiant_win" in match and match["radiant_win"]:
 				message += "**RADIANT WON**"
 			else:
 				message += "**DIRE WON**"
