@@ -4,10 +4,11 @@ from .utils.dataIO import fileIO
 from .utils import checks
 from __main__ import send_cmd_help
 import os
+import asyncio
 
 
 default_greeting = "Welcome {0.name} to {1.name}!"
-default_settings = {"GREETING": default_greeting, "ON": False, "CHANNEL": None}
+default_settings = {"GREETING": default_greeting, "ON": False, "CHANNEL": None, "WHISPER" : False}
 
 class Welcome:
     """Welcomes new members to the server in the default channel"""
@@ -32,6 +33,7 @@ class Welcome:
             msg += "GREETING: {}\n".format(self.settings[server.id]["GREETING"])
             msg += "CHANNEL: #{}\n".format(self.get_welcome_channel(server)) 
             msg += "ON: {}\n".format(self.settings[server.id]["ON"]) 
+            msg += "WHISPER: {}\n".format(self.settings[server.id]["WHISPER"])
             msg += "```"
             await self.bot.say(msg)
 
@@ -84,6 +86,35 @@ class Welcome:
         await self.bot.send_message(channel,"I will now send welcome messages to {0.mention}".format(channel))
         await self.send_testing_msg(ctx)
 
+    @welcomeset.command(pass_context=True)
+    async def whisper(self, ctx, choice : str=None): 
+        """Sets whether or not a DM is sent to the new user
+        
+        Options:
+            off - turns off DMs to users
+            only - only send a DM to the user, don't send a welcome to the channel
+            both - send a message to both the user and the channel
+
+        If Option isn't specified, toggles between 'off' and 'only'"""
+        options = {"off": False, "only": True, "both": "BOTH"}
+        server = ctx.message.server
+        if choice == None:
+            self.settings[server.id]["WHISPER"] = not self.settings[server.id]["WHISPER"]
+        elif choice.lower() not in options:
+            await send_cmd_help(ctx)
+            return
+        else:
+            self.settings[server.id]["WHISPER"] = options[choice.lower()]
+        fileIO("data/welcome/settings.json", "save", self.settings)
+        channel = self.get_welcome_channel(server)
+        if not self.settings[server.id]["WHISPER"]:
+            await self.bot.say("I will no longer send DMs to new users")
+        elif self.settings[server.id]["WHISPER"] == "BOTH":
+            await self.bot.send_message(channel,"I will now send welcome messages to {0.mention} as well as to the new user in a DM".format(channel))
+        else:
+            await self.bot.send_message(channel,"I will now only send welcome messages to the new user as a DM".format(channel))
+        await self.send_testing_msg(ctx)
+
 
     async def member_join(self, member):
         server = member.server
@@ -97,7 +128,12 @@ class Welcome:
             print("Server is None. Private Message or some new fangled Discord thing?.. Anyways there be an error, the user was {}".format(member.name))
             return
         channel = self.get_welcome_channel(server)
-        if self.speak_permissions(server):
+        if channel is None:
+            print('welcome.py: Channel not found. It was most likely deleted. User joined: {}'.format(member.name))
+            return
+        if self.settings[server.id]["WHISPER"]:
+            await self.bot.send_message(member, self.settings[server.id]["GREETING"].format(member, server))
+        if self.settings[server.id]["WHISPER"] != True and self.speak_permissions(server):
             await self.bot.send_message(channel, self.settings[server.id]["GREETING"].format(member, server))
         else:
             print("Permissions Error. User that joined: {0.name}".format(member))
@@ -105,18 +141,29 @@ class Welcome:
 
 
     def get_welcome_channel(self, server):
-        return server.get_channel(self.settings[server.id]["CHANNEL"])
+        try:
+            return server.get_channel(self.settings[server.id]["CHANNEL"])
+        except:
+            return None
 
     def speak_permissions(self, server):
         channel = self.get_welcome_channel(server)
+        if channel is None:
+            return False
         return server.get_member(self.bot.user.id).permissions_in(channel).send_messages
 
     async def send_testing_msg(self, ctx):
         server = ctx.message.server
         channel = self.get_welcome_channel(server)
+        if channel is None:
+            await self.bot.send_message(ctx.message.channel, "I can't find the specified channel. It might have been deleted.")
+            return
         await self.bot.send_message(ctx.message.channel, "`Sending a testing message to `{0.mention}".format(channel))
         if self.speak_permissions(server):
-            await self.bot.send_message(channel, self.settings[server.id]["GREETING"].format(ctx.message.author,server))
+            if self.settings[server.id]["WHISPER"]:
+                await self.bot.send_message(ctx.message.author, self.settings[server.id]["GREETING"].format(ctx.message.author,server))
+            if self.settings[server.id]["WHISPER"] != True:
+                await self.bot.send_message(channel, self.settings[server.id]["GREETING"].format(ctx.message.author,server))
         else: 
             await self.bot.send_message(ctx.message.channel,"I do not have permissions to send messages to {0.mention}".format(channel))
         
@@ -131,7 +178,15 @@ def check_files():
     if not fileIO(f, "check"):
         print("Creating welcome settings.json...")
         fileIO(f, "save", {})
-
+    else: #consistency check
+        current = fileIO(f, "load")
+        for k,v in current.items():
+            if v.keys() != default_settings.keys():
+                for key in default_settings.keys():
+                    if key not in v.keys():
+                        current[k][key] = default_settings[key]
+                        print("Adding " + str(key) + " field to welcome settings.json")
+        fileIO(f, "save", current)
 
 def setup(bot):
     check_folders()
