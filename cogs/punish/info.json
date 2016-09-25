@@ -1,6 +1,7 @@
 {
     "AUTHOR" : "Kowlin",
-    "DESCRIPTION" : "Place annoying users in timeout! There shall be silence! | LEGACY EDITION!",
-    "DISABLED" : false,
-    "NAME" : "Punish"
+    "INSTALL_MSG" : "Thanks for installing Punish.\n\nThings to keep in mind,\nThis cog will create a roll named **Punished**.\nAny role below this role will not be able to talk in any chat room\nPlace your moderator roles **above** the **Punished** role to avoid them being affected.",
+    "NAME" : "Punish",
+    "SHORT" : "Punish a misbehaving user.",
+    "DESCRIPTION" : "Punish a misbehaving user. This places a user into timeout. Removing his right to talk on ALL channels."
 }
