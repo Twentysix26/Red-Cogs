@@ -202,7 +202,7 @@ class Punish:
             log.debug('after loops')
 
     async def new_member(self, member):
-        if memver.server.id in self.json:
+        if member.server.id in self.json:
             if member.id in self.json[member.server.id]:
                 r = discord.utils.get(member.server.roles, name='Punished')
                 await self.bot.add_roles(member, r)
