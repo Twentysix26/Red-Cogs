@@ -15,19 +15,18 @@ class RemindMe:
         self.units = {"minute" : 60, "hour" : 3600, "day" : 86400, "week": 604800, "month": 2592000}
 
     @commands.command(pass_context=True)
-    async def remindme(self, ctx,  quantity : int, time_unit : str, *text : str):
+    async def remindme(self, ctx,  quantity : int, time_unit : str, *, text : str):
         """Sends you <text> when the time is up
 
         Accepts: minutes, hours, days, weeks, month
         Example:
         [p]remindme 3 days Have sushi with Asu and JennJenn"""
-        text = " ".join(text)
         time_unit = time_unit.lower()
         author = ctx.message.author
         s = ""
         if time_unit.endswith("s"):
             time_unit = time_unit[:-1]
-            s = "s"          
+            s = "s"
         if not time_unit in self.units:
             await self.bot.say("Invalid time unit. Choose minutes/hours/days/weeks/month")
             return
@@ -62,7 +61,7 @@ class RemindMe:
             await self.bot.say("You don't have any upcoming notification.")
 
     async def check_reminders(self):
-        while "RemindMe" in self.bot.cogs:
+        while self is self.bot.get_cog("RemindMe"):
             to_remove = []
             for reminder in self.reminders:
                 if reminder["FUTURE"] <= int(time.time()):
