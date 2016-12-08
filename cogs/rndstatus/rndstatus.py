@@ -25,8 +25,8 @@ class RandomStatus:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @rndstatus.command(name="set")
-    async def _set(self, *statuses : str):
+    @rndstatus.command(name="set", pass_context=True)
+    async def _set(self, ctx, *statuses : str):
         """Sets Red's random statuses
 
         Accepts multiple statuses.
@@ -34,12 +34,13 @@ class RandomStatus:
         Example:
         !rndstatus set \"Tomb Raider II\" \"Transistor\" \"with your heart.\"
         Shows current list if empty."""
+        current_status = ctx.message.server.me.status
         if statuses == () or "" in statuses:
             await self.bot.whisper("Current statuses: " + " | ".join(self.statuses))
             return
         self.statuses = list(statuses)
         fileIO("data/rndstatus/statuses.json", "save", self.statuses)
-        await self.bot.change_status(None)
+        await self.bot.change_presence(status=current_status)
         await self.bot.say("Done. Redo this command with no parameters to see the current list of statuses.")
 
 
@@ -57,22 +58,23 @@ class RandomStatus:
 
     async def switch_status(self, message):
         if not message.channel.is_private:
-            current_status = str(message.server.me.game)
+            current_game = str(message.server.me.game)
+            current_status = message.server.me.status
 
             if self.last_change == None: #first run
                 self.last_change = int(time.perf_counter())
-                if len(self.statuses) > 0 and (current_status in self.statuses or current_status == "None"):
-                    new_status = self.random_status(message)
-                    await self.bot.change_status(discord.Game(name=new_status))
+                if len(self.statuses) > 0 and (current_game in self.statuses or current_game == "None"):
+                    new_game = self.random_status(message)
+                    await self.bot.change_presence(game=discord.Game(name=new_game), status=current_status)
 
             if message.author.id != self.bot.user.id:
                 if abs(self.last_change - int(time.perf_counter())) >= self.settings["DELAY"]:
                     self.last_change = int(time.perf_counter())
-                    new_status = self.random_status(message)
-                    if new_status != None:
-                        if current_status != new_status:  
-                            if current_status in self.statuses or current_status == "None": #Prevents rndstatus from overwriting song's titles or
-                                await self.bot.change_status(discord.Game(name=new_status)) #custom statuses set with !set status
+                    new_game = self.random_status(message)
+                    if new_game != None:
+                        if current_game != new_game:
+                            if current_game in self.statuses or current_game == "None": #Prevents rndstatus from overwriting song's titles or
+                                await self.bot.change_presence(game=discord.Game(name=new_game), status=current_status) #custom statuses set with !set status
 
     def random_status(self, msg):
         current = str(msg.server.me.game)
